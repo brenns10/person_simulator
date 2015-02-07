@@ -7,8 +7,9 @@ The `World` holds all the simulation's data and, on each tick, is reponsible for
 <!---
 ####Potential private attributes
 `_persons:dict<str,Person>`
-`_get_persons(self) -> list<persons>`
-
+`_get_persons(self:World) -> list<persons>`
+`_do(self:World, actor:Person, action:Action, target:Person)`  # responsible for tracking ticks
+               
 ####Tick Overview
 class World():
     ...
@@ -17,43 +18,42 @@ class World():
 	   actions_this_tick = self.update()
        self.render(actions_this_tick)
 
-
     def update(self):
-        actions_this_tick = []
         persons = self._get_persons()[:]
 	    persons.shuffle()
 
+        # run base updates
         for person in persons:
-            person.get_base_update()
+            actions = person.get_base_update()
+            for action in actions:
+                self._do(person, action, person)
 
-        # This part (i.e. polling for interactions) subject to chnage
+        # Poll for interactions.
         for person in persons:
             others = set(persons) - person
             action, target = person.get_interaction(person)
 
             if target is None:
-                targets = list(others)
+                targets = others
             else:
                 targets = [target]
 
             for target in others:
-                target_after = action(person, target)
-                actions_this_tick.append((person, action, target, target_after))
+                self._do(person, action, target)
 
             
-    def render(self, actions_this_tick):
+    def render(self):
        for display in world.displays:
-           display.render(world, actions_this_tick)
-
-    ....
+           display.render(world)
+    ...
    -->
 
 ## Person <!-- Entity? TBD based on ambition / time -->
 
 Each `Person` must support the following methods:
 
-1. `get_base_update(self:Person) -> Person`
-   Returns this this `Person` after standard tick updates (e.g. increasing Hunger, drowsiness.) Called exactly once per tick.
+1. `get_base_update(self:Person) -> iterable<Action>`  
+   Returns a list of `Action` callables that perform standard tick updates to the self (e.g. increasing Hunger, drowsiness.) Called exactly once per tick.
 
 2. `get_interaction(self:Person, others:iterable<Person>) -> (Action, Person)`  
    Returns an `Action` to be performed on another `Person` (e.g. slapping another player.) If the the second member of the returned tuple is None, the action is performed on all the other players. May be called several times per tick.
@@ -75,6 +75,8 @@ All `Action` objects must support the following methods:
 
 2. `get_name(self:Action) -> str`
    Returns the name of this `Action`.
+
+Actions are added by creating `*.py` files in the `actions/` directory that contain a single class supporting this interface.
 
 
 ## Display
