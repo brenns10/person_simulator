@@ -48,7 +48,7 @@ class World():
     ...
    -->
 
-## Person <!-- Entity? TBD based on ambition / time -->
+## Person
 
 Each `Person` must support the following methods:
 
