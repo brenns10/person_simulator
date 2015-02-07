@@ -2,14 +2,7 @@
 **_Document subject to revision_**
 
 ## World
-The `World` holds all the simulation's data and is reponsible for updating it on a tick. The world will support the following methods:
-
-
-1. `do(self:World, actor:Person, action:Action, target:Person) --> World`  
-   Returns the world after `actor` applies the `action` to `target`. Intended for use in the `on_tick` method of `Person`.
-
-2. `get_others(self:World, callee:Person) --> iterable<Person>`  
-   Returns all other `Person` objects in the world besides the `callee`. Intended for use in the `on_tick` method of `Person`.
+The `World` holds all the simulation's data and is reponsible for updating it on a tick.
 
 <!---
 ####Potential private attributes
@@ -19,40 +12,56 @@ The `World` holds all the simulation's data and is reponsible for updating it on
 ####Tick Overview
 class World():
     ...
-    def do(self, actor, action, target):
-        ...
-        self.actions_this_tick.append((actor, action, target))
-        ...
 
     def on_tick(self):
-	   self.update()
-       self.render()
+	   actions_this_tick = self.update()
+       self.render(actions_this_tick)
+
 
     def update(self):
-        self.actions_this_tick = []
+        actions_this_tick = []
         persons = self._get_persons()[:]
 	    persons.shuffle()
 
         for person in persons:
-            person.on_tick(self)
-            
-    def render(self):
-       for display in world.displays:
-           display.render(world, self.actions_this_tick)
+            person.get_base_update()
 
+        # This part (i.e. polling for interactions) subject to chnage
+        for person in persons:
+            others = set(persons) - person
+            action, target = person.get_interaction(person)
+
+            if target is None:
+                targets = list(others)
+            else:
+                targets = [target]
+
+            for target in others:
+                target_after = action(person, target)
+                actions_this_tick.append((person, action, target, target_after))
+
+            
+    def render(self, actions_this_tick):
+       for display in world.displays:
+           display.render(world, actions_this_tick)
+
+    ....
    -->
 
 ## Person <!-- Entity? TBD based on ambition / time -->
 
 Each `Person` must support the following methods:
 
-1. `on_tick(self:Person, world:World) -> Person`  
-   Returns the updated self after the tick. This method should perform both updates (e.g. increasing hunger, drowsiness) and interactions (e.g. slapping another `Person`). Both types of updates should be done through the `world.do()`.
+1. `get_base_update(self:Person) -> Person`
+   Returns the standard tick updates for this `Person` (e.g. increasing Hunger, drowsiness.) Called exactly once per tick.
 
-2. `get_id(self:Person) -> str`  
+2. `get_interaction(self:Person, others:iterable<Person>) -> (Action, Person)`  
+   Returns an `Action` to be performed on another `Person` (e.g. slapping another player.) If the the second member of the returned tuple is None, the action is performed on all the other players. May be called several times per tick.
+   
+3. `get_id(self:Person) -> str`  
    Returns a unique identifier of this person. For small simulations, this can just be the first name, but should be a UUID for larger simulations.
 
-3. `get_name(self:Person) -> str`  
+4. `get_name(self:Person) -> str`  
    Returns the name of this `Person`.
 
 Persons are added by creating `*.py` files in the `persons/` directory that contain a single class supporting this interface.
@@ -64,7 +73,7 @@ All `Action` objects must support the following methods:
 1. `__call__(self:Action, actor:Person, target:Person) -> Person`  
    Returns the updated `target` due to the `actor` taking this `Action`. Required to make Action a callable.
 
-2. `get_name(self:Person) -> str`
+2. `get_name(self:Action) -> str`
    Returns the name of this `Action`.
 
 
