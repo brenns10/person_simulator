@@ -2,7 +2,7 @@
 **_Document subject to revision_**
 
 ## World
-The `World` holds all the simulation's data and is reponsible for updating it on a tick.
+The `World` holds all the simulation's data and, on each tick, is reponsible for updating it and calling for it to be displayed.
 
 <!---
 ####Potential private attributes
@@ -53,7 +53,7 @@ class World():
 Each `Person` must support the following methods:
 
 1. `get_base_update(self:Person) -> Person`
-   Returns the standard tick updates for this `Person` (e.g. increasing Hunger, drowsiness.) Called exactly once per tick.
+   Returns this this `Person` after standard tick updates (e.g. increasing Hunger, drowsiness.) Called exactly once per tick.
 
 2. `get_interaction(self:Person, others:iterable<Person>) -> (Action, Person)`  
    Returns an `Action` to be performed on another `Person` (e.g. slapping another player.) If the the second member of the returned tuple is None, the action is performed on all the other players. May be called several times per tick.
@@ -78,7 +78,7 @@ All `Action` objects must support the following methods:
 
 
 ## Display
-`Display` objects are responsible for showing the `World` to the world. They must support the following methods:
+`Display` objects are responsible for showing the `World` to the world. Each `Display` must support the following methods:
 
 1. `render(self:Display, world:World, actions:iterable<Action>)`  
    Consumes the current `World` state and the actions that led to it. This method should create a representation of the `World` that the intended audience can easily interpret.
@@ -89,7 +89,7 @@ Displays are added by creating `*.py` files in the `display/` directory that con
 
 Should we:
 
-- Split `Person.on_tick()` into two methods, one for updates and another for interactions?
+- Merge `Person.get_base_updates` and `Person.get_interaction` back into `Person.on_tick()`?
 - Standardize how players choose iteractions (e.g. have a Scheduler?)
 - Add a Relationship attribute that would track `Person`-`Person interaction over time (i.e. give the simulation memory?)
   + Even something as simple as a relationship valence (e.g. valence \in [0.0, 1.0], where 1 is most positive, 0.0 is most negative) could work.
