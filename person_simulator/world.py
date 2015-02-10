@@ -1,9 +1,10 @@
 """
 Contains the World class, the container for most of the simulation's data.
 """
-
 from random import shuffle
-
+from importlib import import_module
+import os
+import re
 
 class World():
     def __init__(self):
@@ -42,12 +43,27 @@ class World():
     def _load_persons(self):
         # TODO: load persons from the `/persons` directory
         persons = {}
+        person_mods = self._load_modules_from_dir('persons')
         return persons
 
     def _load_displays(self):
         # TODO: load displays from `/displays` directory
         displays = []
+        disp_mods = self._load_modules_from_dir('displays')
         return displays
+
+    def _load_modules_from_dir(self, dir_name):
+        """Returns a list of all modules in the specified directory."""
+        PYTHON_MODULE_PATT = r'(?P<mod_name>[^_].*)\.py'
+        files = os.listdir(dir_name)
+        modules = []
+        for f in files:
+            m = re.match(PYTHON_MODULE_PATT, f)
+            if m is not None:
+                mod_name = m.group('mod_name')
+                modules.append(import_module('%s.%s' % (dir_name, mod_name)))
+        return modules
+        
 
     def _get_persons_list(self):
         """Returns a new list of all the people in the world."""
