@@ -11,14 +11,14 @@ class World():
         self._persons = self._load_persons()
         self._displays = self._load_displays()
         
-    def on_tick(self, displays):
+    def on_tick(self):
         action_log = []
         self._update(action_log)
-        self._render(self.displays, action_log)
+        self._render(self._displays, action_log)
 
     def _update(self, action_log):
         persons = self._get_persons_list()
-        random.shuffle(persons)
+        shuffle(persons)
         # First: base updates
         for person in persons:
             actions = person.get_base_update()
@@ -67,7 +67,7 @@ class World():
 
     def _get_persons_list(self):
         """Returns a new list of all the people in the world."""
-        return self._persons.values()[:]
+        return [p for person in self._persons.values()]
 
     def _do(self, actor, action, target, action_log):
         """Performs `actor` taking `action` on `target`, does book-keeping"""
