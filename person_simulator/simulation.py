@@ -20,12 +20,12 @@ def start_simulation():
 
 if __name__ == '__main__':
     p = ArgumentParser('A script for managing person_simulator.')
-    p.add_argument('-d', '--daemon', help='Launches person_simulator in tmux as a daemon.')
+    p.add_argument('-d', '--daemon', action='store_true', help='Launches person_simulator in tmux as a daemon.')
     args = p.parse_args()
 
     if args.daemon:
         # TODO: call out to tmux to start daemon
-        print('Daemon mode not yet supported')
+        print('Daemon mode not yet supported.')
     else:
         try:
             start_simulation()
