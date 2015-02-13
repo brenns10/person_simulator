@@ -3,6 +3,7 @@ Contains the World class, the container for most of the simulation's data.
 """
 from random import shuffle
 from importlib import import_module
+from simulation_conf import CONF as config
 import os
 import re
 
@@ -27,7 +28,7 @@ class World():
         # Second: interactions
         # NOTE: interaction polling process subject to change
         for person in persons:
-            others = set(persons) - person
+            others = set(persons) - set([person])
             action, target = person.get_interaction(others)
             if target is None:
                 targets = others
@@ -41,9 +42,7 @@ class World():
             display.render(self, action_log)
 
     def _load_persons(self):
-        # TODO: load persons from the `/persons` directory
-        persons = {}
-        person_mods = self._load_modules_from_dir('persons')
+        persons = {p.get_id(): p for p in config.get('persons', [])}
         return persons
 
     def _load_displays(self):
@@ -67,7 +66,7 @@ class World():
 
     def _get_persons_list(self):
         """Returns a new list of all the people in the world."""
-        return [p for person in self._persons.values()]
+        return [p for p in self._persons.values()]
 
     def _do(self, actor, action, target, action_log):
         """Performs `actor` taking `action` on `target`, does book-keeping"""
