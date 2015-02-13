@@ -4,49 +4,6 @@
 ## World
 The `World` holds all the simulation's data and, on each tick, is reponsible for updating it and calling for it to be displayed.
 
-<!---
-####Potential private attributes
-`_persons:dict<str,Person>`
-`_get_persons(self:World) -> list<persons>`
-`_do(self:World, actor:Person, action:Action, target:Person)`  # responsible for tracking ticks
-               
-####Tick Overview
-class World():
-    ...
-
-    def on_tick(self):
-	   actions_this_tick = self.update()
-       self.render(actions_this_tick)
-
-    def update(self):
-        persons = self._get_persons()[:]
-	    persons.shuffle()
-
-        # run base updates
-        for person in persons:
-            actions = person.get_base_update()
-            for action in actions:
-                self._do(person, action, person)
-
-        # Poll for interactions.
-        for person in persons:
-            others = set(persons) - person
-            action, target = person.get_interaction(person)
-
-            if target is None:
-                targets = others
-            else:
-                targets = [target]
-
-            for target in others:
-                self._do(person, action, target)
-
-            
-    def render(self):
-       for display in world.displays:
-           display.render(world)
-    ...
-   -->
 
 ## Person
 
@@ -87,13 +44,24 @@ Actions are added by creating `*.py` files in the `actions/` directory that cont
 
 Displays are added by creating `*.py` files in the `display/` directory that contain a single class supporting this interface.
 
+## To Do
+- Define the relationship between 'simulation.py' and 'world.py' better. They're a little runny at the moment.
+- Display.render() should get the whole World
+  + Perhaps even the World before and after?
+  + Would require standard ways to get the people for easy printouts
+- Person classes should support a \_\_str\_\_ for world printouts
+- For action printouts, Action should control the formatting
+  + that method would need access to actor, target
+- How should Person attributes be stored so they are clearly different from other attributes?
+  + (e.g. hunger. Currently, stored as Person.hunger)
+  + stored with an underscore, get named methods generated on \_\_init\_\_?
+  + go into a dictionary? (but then what's the point of an object?)
+  + have a defined and unlikely prefix? (e.g. \_pattr\_hunger?)
+- Add interactions!
+  + would require another player (at least another John Doe)
+- Add Relationships
+  + Even something as simple as relationship valence could work (e.g. valence \in [0, 100], where 100 is most positive and 0 is most negative)
+
 ## To Consider
-
-Should we:
-
-- Merge `Person.get_base_updates` and `Person.get_interaction` back into `Person.on_tick()`?
 - Standardize how players choose iteractions (e.g. have a Scheduler?)
-- Add a Relationship attribute that would track `Person`-`Person interaction over time (i.e. give the simulation memory?)
-  + Even something as simple as a relationship valence (e.g. valence \in [0.0, 1.0], where 1 is most positive, 0.0 is most negative) could work.
-  + Is (currently) easy to implement in `world.do()`.
   
