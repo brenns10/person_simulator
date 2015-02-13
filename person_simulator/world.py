@@ -3,14 +3,13 @@ Contains the World class, the container for most of the simulation's data.
 """
 from random import shuffle
 from importlib import import_module
-from simulation_conf import CONF as config
 import os
 import re
 
 class World():
-    def __init__(self):
-        self._persons = self._load_persons()
-        self._displays = self._load_displays()
+    def __init__(self, persons, displays):
+        self._persons = persons
+        self._displays = displays
         
     def on_tick(self):
         action_log = []
@@ -37,19 +36,10 @@ class World():
             for target in targets:
                 self._do(person, action, target, action_log)
 
+
     def _render(self, displays, action_log):
         for display in displays:
-            display.render(self, action_log)
-
-    def _load_persons(self):
-        persons = {p.get_id(): p for p in config.get('persons', [])}
-        return persons
-
-    def _load_displays(self):
-        # TODO: load displays from `/displays` directory
-        displays = []
-        disp_mods = self._load_modules_from_dir('displays')
-        return displays
+            display.render(self._get_persons_list(), action_log)
 
     def _load_modules_from_dir(self, dir_name):
         """Returns a list of all modules in the specified directory."""
@@ -63,7 +53,6 @@ class World():
                 modules.append(import_module('%s.%s' % (dir_name, mod_name)))
         return modules
         
-
     def _get_persons_list(self):
         """Returns a new list of all the people in the world."""
         return [p for p in self._persons.values()]

@@ -8,10 +8,20 @@ from argparse import ArgumentParser
 from subprocess import Popen, PIPE
 from world import World
 from time import sleep
+from simulation_conf import CONF as config
+
+
+def load_persons():
+    return {p.get_id(): p for p in config.get('persons', [])}
+
+
+def load_displays():
+    # TODO: load displays from `/displays` directory
+    return config.get('displays', [])
 
 
 def start_simulation():
-    world = World()
+    world = World(load_persons(), load_displays())
     while True:
         print('simulation: tick')
         world.on_tick()
